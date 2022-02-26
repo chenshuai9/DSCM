@@ -1,0 +1,22 @@
+clc;
+[config, success] = requestConfiguration();
+config.('gridpoints') = calculateGridpoints(config);            %相邻子区间距
+[centerRow, centerCol] = getCenterGridpoint(config.gridpoints); %获取中心点
+initialGuess = requestInitialGuess(config, 14, 14);
+config.imReference.('interpolation') = interpolate(config.imReference.file); %插值
+config.imTarget.('interpolation') = interpolate(config.imTarget.file);       %插值
+[initialGuess, c] = optimizeInitialGuess(14, 14, config, initialGuess);
+tic;
+start_initial = toc;
+[result, p, c, iterations, convHist, time_icgn, time_cc] = optimizeICGN(initialGuess, 14, 36, config);
+pans=struct('p_u',pu,...
+            'p_v',pv);
+ans=struct('p',pans,...
+            'c',c,...
+            'interations',it);
+for i=44:1:length(config.gridpoints.rows)
+    for j=44:1:length(config.gridpoints.cols)
+        [result, p, c, iterations, convHist, time_icgn, time_cc] = optimizeICGN(initialGuess, config.gridpoints.rows(i),config.gridpoints.rows(j), config);
+        
+    end
+end
